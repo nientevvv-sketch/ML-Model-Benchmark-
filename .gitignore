@@ -227,7 +227,7 @@ __marimo__/
 # Project-specific ignores
 .idea/
 .vscode/
-results/
+
 
 # Local installers and archives
 *.exe
