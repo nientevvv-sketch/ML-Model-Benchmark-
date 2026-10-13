@@ -25,7 +25,7 @@ def test_build_models_returns_four_models():
     }
 
 
-def test_cross_validation_has_expected_columns():
+def test_hyperparameter_tuning_returns_all_models():
     X, y, _ = main.load_data()
     X_train, X_test, y_train, y_test = train_test_split(
         X,
@@ -36,24 +36,17 @@ def test_cross_validation_has_expected_columns():
     )
 
     models = main.build_models()
-    cv_df = main.run_cross_validation(X_train, y_train, models)
+    tuned_models, best_params, best_cv_scores = main.tune_hyperparameters(
+        X_train,
+        y_train,
+        models,
+    )
 
-    assert isinstance(cv_df, pd.DataFrame)
-    assert len(cv_df) == 4
-
-    required_columns = {
-        "Model",
-        "accuracy mean",
-        "accuracy std",
-        "precision_malignant mean",
-        "precision_malignant std",
-        "recall_malignant mean",
-        "recall_malignant std",
-        "f1_malignant mean",
-        "f1_malignant std",
-    }
-
-    assert required_columns.issubset(set(cv_df.columns))
+    assert len(tuned_models) == 4
+    assert len(best_params) == 4
+    assert len(best_cv_scores) == 4
+    assert set(tuned_models.keys()) == set(models.keys())
+    assert all(isinstance(value, float) for value in best_cv_scores.values())
 
 
 def test_evaluate_models_returns_valid_metrics():
@@ -67,20 +60,43 @@ def test_evaluate_models_returns_valid_metrics():
     )
 
     models = main.build_models()
+    tuned_models, _, best_cv_scores = main.tune_hyperparameters(
+        X_train,
+        y_train,
+        models,
+    )
     results_df, predictions = main.evaluate_models(
         X_train,
         y_train,
         X_test,
         y_test,
-        models,
+        tuned_models,
+        best_cv_scores,
     )
 
     assert isinstance(results_df, pd.DataFrame)
     assert len(results_df) == 4
     assert len(predictions) == 4
 
-    for metric in ["Accuracy", "Precision (malignant)", "Recall (malignant)", "F1 (malignant)"]:
-        assert results_df[metric].between(0, 1).all(), f"{metric} has values outside [0, 1]"
+    required_columns = {
+        "Model",
+        "Best CV F1 (malignant)",
+        "Test Accuracy",
+        "Test Precision (malignant)",
+        "Test Recall (malignant)",
+        "Test F1 (malignant)",
+    }
+    assert required_columns.issubset(set(results_df.columns))
+
+    for metric in [
+        "Test Accuracy",
+        "Test Precision (malignant)",
+        "Test Recall (malignant)",
+        "Test F1 (malignant)",
+    ]:
+        assert results_df[metric].between(0, 1).all(), (
+            f"{metric} has values outside [0, 1]"
+        )
 
     assert set(results_df["Model"]) == set(models.keys())
 
@@ -98,22 +114,27 @@ def test_save_results_creates_csv_files(tmp_path, monkeypatch):
     )
 
     models = main.build_models()
-    cv_df = main.run_cross_validation(X_train, y_train, models)
+    tuned_models, best_params, best_cv_scores = main.tune_hyperparameters(
+        X_train,
+        y_train,
+        models,
+    )
     results_df, predictions = main.evaluate_models(
         X_train,
         y_train,
         X_test,
         y_test,
-        models,
+        tuned_models,
+        best_cv_scores,
     )
 
-    main.save_results(results_df, cv_df)
+    main.save_results(results_df, best_params)
 
-    assert (tmp_path / "results" / "model_comparison.csv").exists()
-    assert (tmp_path / "results" / "cross_validation.csv").exists()
+    assert (tmp_path / "results" / "final_report.csv").exists()
+    assert (tmp_path / "results" / "best_hyperparameters.csv").exists()
 
-    comparison_df = pd.read_csv(tmp_path / "results" / "model_comparison.csv")
-    validation_df = pd.read_csv(tmp_path / "results" / "cross_validation.csv")
+    comparison_df = pd.read_csv(tmp_path / "results" / "final_report.csv")
+    validation_df = pd.read_csv(tmp_path / "results" / "best_hyperparameters.csv")
 
     assert not comparison_df.empty
     assert not validation_df.empty
