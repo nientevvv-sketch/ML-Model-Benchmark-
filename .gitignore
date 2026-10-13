@@ -1,3 +1,4 @@
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -218,3 +219,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+.idea/
+.vscode/
+
+# Project-specific ignores
+.idea/
+.vscode/
+results/
+
+# Local installers and archives
+*.exe
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
