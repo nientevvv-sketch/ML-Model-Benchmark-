@@ -66,10 +66,13 @@ The project generates the following plots:
 ### Confusion Matrices
 
 ![Confusion Matrices](results/confusion_matrices.png)
+<img width="3321" height="2967" alt="confusion_matrices" src="https://github.com/user-attachments/assets/37ffc6a9-5a72-4c63-9950-88cb3c3077b9" />
 
 ### ROC Curves
 
-![ROC Curves](results/roc_curves.png)
+![ROC Curves](results/roc_curves.png) 
+<img width="2670" height="2068" alt="roc_curves" src="https://github.com/user-attachments/assets/6edc6de0-1296-4e32-b3c8-c3de51c2169c" />
+
 
 ## Output Files
 
