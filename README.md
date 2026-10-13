@@ -74,8 +74,72 @@ The project generates the following plots:
 <img width="2670" height="2068" alt="roc_curves" src="https://github.com/user-attachments/assets/6edc6de0-1296-4e32-b3c8-c3de51c2169c" />
 
 
-## Output Files
+The results/ directory contains:
 
-The `results/` directory contains:
+final_report.csv — test-set metrics and cross-validation F1 scores.
 
-- `final_report.csv` — test-set metrics and
+best_hyperparameters.csv — selected hyperparameters for each model.
+
+classification_reports.csv — per-class precision, recall, F1-score, and support.
+
+confusion_matrices.png — confusion matrices for all four models.
+
+roc_curves.png — ROC curves comparing the models.
+
+Repository Structure
+
+ML-Model-Benchmark/
+├── main.py
+├── requirements.txt
+├── .gitignore
+├── LICENSE
+├── README.md
+└── results/
+    ├── final_report.csv
+    ├── best_hyperparameters.csv
+    ├── classification_reports.csv
+    ├── confusion_matrices.png
+    └── roc_curves.png
+
+Installation
+
+Python 3.10 or newer is recommended.
+
+Clone the repository:
+
+git clone https://github.com/nientevvv-sketch/ML-Model-Benchmark-.git
+cd ML-Model-Benchmark-
+
+Create and activate a virtual environment:
+
+python -m venv .venv
+
+On Windows PowerShell:
+
+.\.venv\Scripts\Activate.ps1
+
+Install dependencies:
+
+pip install -r requirements.txt
+
+Usage
+
+Run the benchmark from the project root:
+
+python main.py
+
+The program performs hyperparameter tuning, evaluates the models, and saves the generated reports and plots to the results/ directory.
+
+Technologies
+
+Python
+
+pandas
+
+scikit-learn
+
+Matplotlib
+
+Limitations
+
+This is an educational benchmark, not a medical diagnostic system. The dataset is relatively small, and results depend on the selected train/test split and model configuration. Further validation on independent data would be required before any real-world medical application.
