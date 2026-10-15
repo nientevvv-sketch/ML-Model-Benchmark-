@@ -157,8 +157,26 @@ The script runs the machine learning benchmark, performs hyperparameter tuning, 
 - **scikit-learn** — model training, hyperparameter tuning, and evaluation
 - **Matplotlib** — data visualization
 
-##  Limitations
+### Computer Vision Benchmark: CIFAR-10
 
-This project is intended for educational purposes and portfolio demonstration only. It is **not a medical diagnostic system** and must not be used to make clinical decisions.
+The computer vision benchmark compares a custom Convolutional Neural Network (CNN) with ResNet18 on a subset of the CIFAR-10 dataset.
 
-The dataset is relatively small, and the reported performance depends on the train/test split, cross-validation strategy, and model configurations. Further validation using independent datasets would be necessary before considering any real-world medical application.
+**Experimental setup**
+- Dataset: CIFAR-10 (10 classes)
+- Training subset: 4,500 images
+- Validation subset: 500 images
+- Test subset: 1,000 images
+- Epochs per model: 2
+- Hardware: CPU-only
+
+**Results**
+
+| Model | Test Accuracy | Macro F1 | Training Time |
+|---|---:|---:|---:|
+| CNN | 41.20% | 35.81% | 9.02 s |
+| ResNet18 | 37.50% | 33.25% | 326.63 s |
+
+Conclusion & Limitations
+Under the current experimental settings the custom CNN outperformed ResNet18 on this benchmark: it achieved higher test accuracy and higher macro F1 while requiring substantially less training time. Results and visualizations from these runs are saved in results/computer_vision/.
+
+However, these findings are preliminary and should be interpreted with caution. The experiment used a small subset of CIFAR-10 and only two training epochs, so the comparison is not comprehensive. This project is intended for educational and portfolio purposes only — it is not a production or clinical diagnostic system. Reported performance depends strongly on choices such as the train/test split, cross-validation strategy, hyperparameter grids, and training schedule. To draw robust conclusions about architecture performance you should run larger-scale experiments (full datasets, more epochs), use more extensive hyperparameter optimization, and validate on independent test sets.
