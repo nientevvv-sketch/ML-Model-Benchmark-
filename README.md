@@ -177,6 +177,7 @@ The computer vision benchmark compares a custom Convolutional Neural Network (CN
 | ResNet18 | 37.50% | 33.25% | 326.63 s |
 
 **Conclusion & Limitations**
+
 Under the current experimental settings the custom CNN outperformed ResNet18 on this benchmark: it achieved higher test accuracy and higher macro F1 while requiring substantially less training time. Results and visualizations from these runs are saved in results/computer_vision/.
 
 However, these findings are preliminary and should be interpreted with caution. The experiment used a small subset of CIFAR-10 and only two training epochs, so the comparison is not comprehensive. This project is intended for educational and portfolio purposes only — it is not a production or clinical diagnostic system. Reported performance depends strongly on choices such as the train/test split, cross-validation strategy, hyperparameter grids, and training schedule. To draw robust conclusions about architecture performance you should run larger-scale experiments (full datasets, more epochs), use more extensive hyperparameter optimization, and validate on independent test sets.
