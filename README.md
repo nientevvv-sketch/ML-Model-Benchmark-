@@ -104,7 +104,7 @@ The project generates the following plots:
 
 ### Confusion Matrices
 
-![Confusion Matrices](results/confusion_matrices.png)
+Readme/results/confusion_matrices.png
 
 ### ROC Curves
 
