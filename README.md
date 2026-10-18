@@ -108,7 +108,7 @@ Readme/results/confusion_matrices.png
 
 ### ROC Curves
 
-![ROC Curves](results/roc_curves.png)
+![ROC Curves](Readme/results/roc_curves.png)
 
 
 ##  Results
