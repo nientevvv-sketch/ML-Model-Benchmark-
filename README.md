@@ -210,6 +210,6 @@ The computer vision benchmark compares a custom Convolutional Neural Network (CN
 
 **Conclusion & Limitations**
 
-Under the current experimental settings the custom CNN outperformed ResNet18 on this benchmark: it achieved higher test accuracy and higher macro F1 while requiring substantially less training ti[...] 
+Under the current experimental settings the custom CNN outperformed ResNet18 on this benchmark: it achieved higher test accuracy and higher macro F1 while requiring substantially less training time.
 
-However, these findings are preliminary and should be interpreted with caution. The experiment used a small subset of CIFAR-10 and only two training epochs, so the comparison is not comprehensive[...]
+However, these findings are preliminary and should be interpreted with caution. The experiment used a small subset of CIFAR-10 and only two training epochs, so the comparison is not comprehensive.
