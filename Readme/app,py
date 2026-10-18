@@ -1,0 +1,166 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    roc_curve,
+    auc,
+    confusion_matrix,
+)
+
+RANDOM_STATE = 42
+TEST_SIZE = 0.2
+
+@st.cache_data
+def load_data():
+    dataset = load_breast_cancer(as_frame=True)
+    X = dataset.data
+    y = dataset.target
+    feature_names = dataset.feature_names
+    target_names = dataset.target_names
+    return X, y, feature_names, target_names
+
+def build_models():
+    return {
+        "Logistic Regression": make_pipeline(
+            StandardScaler(),
+            LogisticRegression(max_iter=2000, random_state=RANDOM_STATE)
+        ),
+        "Decision Tree": DecisionTreeClassifier(random_state=RANDOM_STATE),
+        "Random Forest": RandomForestClassifier(random_state=RANDOM_STATE, n_estimators=200),
+        "Gradient Boosting": GradientBoostingClassifier(random_state=RANDOM_STATE),
+    }
+
+@st.cache_data
+def evaluate_models():
+    X, y, feature_names, target_names = load_data()
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
+    )
+
+    rows = []
+    model_objects = {}
+
+    for name, model in build_models().items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        y_score = model.predict_proba(X_test)[:, 0]
+
+        rows.append(
+            {
+                "Model": name,
+                "Accuracy": round(accuracy_score(y_test, y_pred), 4),
+                "Precision": round(precision_score(y_test, y_pred, pos_label=0, zero_division=0), 4),
+                "Recall": round(recall_score(y_test, y_pred, pos_label=0, zero_division=0), 4),
+                "F1": round(f1_score(y_test, y_pred, pos_label=0, zero_division=0), 4),
+                "ROC-AUC": round(roc_auc_score((y_test == 0).astype(int), y_score), 4),
+            }
+        )
+        model_objects[name] = model
+
+    df = pd.DataFrame(rows).sort_values("F1", ascending=False).reset_index(drop=True)
+    return df, X, y, X_train, X_test, y_train, y_test, feature_names, target_names, model_objects
+
+def plot_roc_curves(models, X_test, y_test):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    y_true = (y_test == 0).astype(int)
+
+    for name, model in models.items():
+        y_score = model.predict_proba(X_test)[:, 0]
+        fpr, tpr, _ = roc_curve(y_true, y_score)
+        roc_auc = auc(fpr, tpr)
+        ax.plot(fpr, tpr, lw=2, label=f"{name} (AUC={roc_auc:.3f})")
+
+    ax.plot([0, 1], [0, 1], linestyle="--", color="gray", lw=1)
+    ax.set_title("ROC Curves")
+    ax.set_xlabel("False Positive Rate")
+    ax.set_ylabel("True Positive Rate")
+    ax.legend(loc="lower right")
+    ax.grid(alpha=0.3)
+    return fig
+
+def plot_confusion_matrix(model, X_test, y_test, target_names):
+    y_pred = model.predict(X_test)
+    cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
+    fig, ax = plt.subplots(figsize=(5, 4))
+    ax.imshow(cm, cmap="Blues")
+    ax.set_xticks([0, 1])
+    ax.set_yticks([0, 1])
+    ax.set_xticklabels(target_names)
+    ax.set_yticklabels(target_names)
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
+    for i in range(2):
+        for j in range(2):
+            ax.text(j, i, cm[i, j], ha="center", va="center", color="black", fontsize=12)
+    ax.set_title("Confusion Matrix")
+    return fig
+
+st.set_page_config(page_title="ML Model Benchmark", layout="wide")
+
+st.title("Breast Cancer ML Benchmark")
+st.caption("Interactive demo for model comparison on the Breast Cancer Wisconsin dataset")
+
+(
+    results_df,
+    X,
+    y,
+    X_train,
+    X_test,
+    y_train,
+    y_test,
+    feature_names,
+    target_names,
+    model_objects,
+) = evaluate_models()
+
+st.subheader("Model comparison")
+st.dataframe(results_df, use_container_width=True)
+
+st.subheader("Dataset overview")
+col1, col2, col3 = st.columns(3)
+col1.metric("Samples", len(X))
+col2.metric("Features", X.shape[1])
+col3.metric("Positive class", int(y.sum()))
+
+st.subheader("Single patient prediction")
+sample_df = pd.DataFrame([X_train.median().to_dict()])
+sample_df = sample_df[feature_names]
+
+edited = st.data_editor(sample_df, use_container_width=True)
+
+selected_model = st.selectbox("Choose model", list(model_objects.keys()))
+
+sample_values = edited.iloc[0].tolist()
+sample_vector = np.array(sample_values).reshape(1, -1)
+
+pred = model_objects[selected_model].predict(sample_vector)[0]
+proba = model_objects[selected_model].predict_proba(sample_vector)[0]
+malignant_prob = proba[0]  # class 0 = malignant
+benign_prob = proba[1]
+
+st.write(f"Model: {selected_model}")
+st.write(f"Predicted class: {target_names[pred]}")
+st.write(f"Probability of malignant: {malignant_prob:.3f}")
+st.write(f"Probability of benign: {benign_prob:.3f}")
+
+st.subheader("ROC comparison")
+roc_fig = plot_roc_curves(model_objects, X_test, y_test)
+st.pyplot(roc_fig)
+
+st.subheader("Confusion matrix for selected model")
+selected_fig = plot_confusion_matrix(model_objects[selected_model], X_test, y_test, target_names)
+st.pyplot(selected_fig)
